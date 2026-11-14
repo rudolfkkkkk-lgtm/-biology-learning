@@ -1,7 +1,7 @@
 'use strict';
 const base=new URL('./',location.href),form=document.querySelector('#unlockForm'),button=document.querySelector('#open'),status=document.querySelector('#status'),input=document.querySelector('#password');
 let worker;
-function call(type,data={}){return new Promise((resolve,reject)=>{const channel=new MessageChannel(),timer=setTimeout(()=>reject(Error('処理が完了しませんでした。ページを再読み込みしてください。')),90000);channel.port1.onmessage=e=>{clearTimeout(timer);channel.port1.close();resolve(e.data);};worker.postMessage({type,...data},[channel.port2]);});}
+function call(type,data={}){return new Promise((resolve,reject)=>{const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();reject(Error('処理が完了しませんでした。ページを再読み込みしてください。'));},90000);channel.port1.onmessage=e=>{clearTimeout(timer);channel.port1.close();resolve(e.data);};const current=navigator.serviceWorker.controller||worker;current.postMessage({type,...data},[channel.port2]);});}
 function destination(){const fallback=new URL('_content/index.html#home',base);try{const url=new URL(new URL(location.href).searchParams.get('next')||fallback.href,base);return url.origin===base.origin&&url.pathname.startsWith(base.pathname+'_content/')?url.href:fallback.href;}catch{return fallback.href;}}
 (async()=>{try{
  if(!isSecureContext||!navigator.serviceWorker||!crypto.subtle||!window.DecompressionStream)throw Error('このブラウザーでは教材を開けません。最新版のChrome・Edge・Safariをお使いください。HTTPSで開く必要があります。');
