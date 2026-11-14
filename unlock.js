@@ -7,7 +7,7 @@ function destination(){const fallback=new URL('_content/index.html#home',base);t
  if(!isSecureContext||!navigator.serviceWorker||!crypto.subtle||!window.DecompressionStream)throw Error('このブラウザーでは教材を開けません。最新版のChrome・Edge・Safariをお使いください。HTTPSで開く必要があります。');
  await navigator.serviceWorker.register(new URL('vault-sw.js',base),{scope:base.pathname,updateViaCache:'none'});
  const registration=await navigator.serviceWorker.ready;worker=registration.active;
- const result=await call('STATUS');if(result.unlocked){location.replace(destination());return;}
+ const result=await call('STATUS');if(result.error)throw Error(result.error);if(result.unlocked){location.replace(destination());return;}
  status.textContent='';button.disabled=false;
  }catch(e){status.textContent=e.message;}
 })();

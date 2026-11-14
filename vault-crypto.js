@@ -11,9 +11,16 @@ async function derive(password,salt){
  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:ITERATIONS,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
 }
 async function decrypt(bytes,password){
+ return (await openVault(bytes,password)).bytes;
+}
+async function openVault(bytes,password){
  if(bytes.length<53||!MAGIC.every((v,i)=>bytes[i]===v))throw Error('教材データの形式が違います。');
  const key=await derive(password,bytes.slice(9,25));
+ return {key,bytes:await decryptWithKey(bytes,key)};
+}
+async function decryptWithKey(bytes,key){
+ if(bytes.length<53||!MAGIC.every((v,i)=>bytes[i]===v))throw Error('教材データの形式が違います。');
  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(25,37),additionalData:MAGIC},key,bytes.slice(37)));
 }
 
-self.BioVault={decrypt};})();
+self.BioVault={decrypt,openVault,decryptWithKey};})();
